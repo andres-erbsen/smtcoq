@@ -149,3 +149,185 @@ Section InsertionSort.
   End Spec.
 
 End InsertionSort.
+Print Assumptions sort_sorts.
+(*
+Axioms:
+Structures.trace_fold_ind : forall (state step : Type) 
+                              (P : state -> Prop)
+                              (transition : state -> step -> state)
+                              (t : Structures.trace step),
+                            (forall (s0 : state) (i : int),
+                             (i < Structures.trace_length t)%int = true ->
+                             P s0 ->
+                             P (transition s0 (Structures.trace_get t i))) ->
+                            forall s0 : state,
+                            P s0 -> P (Structures.trace_fold transition s0 t)
+sub_spec : forall x y : int, [|x - y|]%int = ([|x|]%int - [|y|]%int) mod wB
+BVList.proof_irrelevance : forall (P : Prop) (p1 p2 : P), p1 = p2
+of_Z_spec : forall z : Z, [|of_Z z|]%int = z mod wB
+lxor_spec : forall x y i : int, bit (x lxor y) i = xorb (bit x i) (bit y i)
+ltb_length : forall (A : Type) (t : array A),
+             (PArray.length t <= max_array_length)%int = true
+lor_spec : forall x y i : int, bit (x lor y) i = bit x i || bit y i
+length_set : forall (A : Type) (t : array A) (i : int) (a : A),
+             PArray.length (t .[ i <- a])%array = PArray.length t
+length_make : forall (A : Type) (size : int) (a : A),
+              PArray.length (make size a) =
+              (if (size <= max_array_length)%int
+               then size
+               else max_array_length)
+get_set_same : forall (A : Type) (t : array A) (i : int) (a : A),
+               (i < PArray.length t)%int = true ->
+               ((t .[ i <- a]) .[ i])%array = a
+get_set_other : forall (A : Type) (t : array A) (i j : int) (a : A),
+                i <> j -> ((t .[ i <- a]) .[ j])%array = (t .[ j])%array
+get_outofbound : forall (A : Type) (t : array A) (i : int),
+                 (i < PArray.length t)%int = false ->
+                 (t .[ i])%array = default t
+get_make : forall (A : Type) (a : A) (size i : int),
+           (make size a .[ i])%array = a
+foldi_down_cont_lt : forall (A B : Type) (f : int -> (A -> B) -> A -> B)
+                       (from downto : int) (cont : A -> B),
+                     (from < downto)%int = true ->
+                     foldi_down_cont f from downto cont = cont
+foldi_down_cont_gt : forall (A B : Type) (f : int -> (A -> B) -> A -> B)
+                       (from downto : int) (cont : A -> B),
+                     (downto < from)%int = true ->
+                     foldi_down_cont f from downto cont =
+                     f from
+                       (fun a' : A =>
+                        foldi_down_cont f (from - 1) downto cont a')
+foldi_down_cont_eq : forall (A B : Type) (f : int -> (A -> B) -> A -> B)
+                       (from downto : int) (cont : A -> B),
+                     from = downto ->
+                     foldi_down_cont f from downto cont = f from cont
+foldi_cont_lt : forall (A B : Type) (f : int -> (A -> B) -> A -> B)
+                  (from to : int) (cont : A -> B),
+                (from < to)%int = true ->
+                foldi_cont f from to cont =
+                f from (fun a' : A => foldi_cont f (from + 1) to cont a')
+foldi_cont_gt : forall (A B : Type) (f : int -> (A -> B) -> A -> B)
+                  (from to : int) (cont : A -> B),
+                (to < from)%int = true -> foldi_cont f from to cont = cont
+foldi_cont_eq : forall (A B : Type) (f : int -> (A -> B) -> A -> B)
+                  (from to : int) (cont : A -> B),
+                from = to -> foldi_cont f from to cont = f from cont
+default_set : forall (A : Type) (t : array A) (i : int) (a : A),
+              default (t .[ i <- a])%array = default t
+default_make : forall (A : Type) (a : A) (size : int),
+               default (make size a) = a
+ClassicalEpsilon.constructive_indefinite_description : 
+forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+compare_def_spec : forall x y : int, (x ?= y)%int = compare_def x y
+Classical_Prop.classic : forall P : Prop, P \/ ~ P
+cast_refl : forall i : int,
+            cast i i = Some (fun (P : int -> Type) (H : P i) => H)
+cast_diff : forall i j : int, (i == j)%int = false -> cast i j = None
+bit_testbit : forall x i : int, bit x i = Z.testbit [|x|]%int [|i|]%int
+bit_eq : forall i1 i2 : int,
+         i1 = i2 <-> (forall i : int, bit i1 i = bit i2 i)
+Cnf.afold_right_impb : forall (t_form : array form)
+                         (interp_atom : int -> bool)
+                         (interp_bvatom : int ->
+                                          forall s : N,
+                                          BVList.BITVECTOR_LIST.bitvector s)
+                         (a : array int),
+                       Misc.afold_right bool int true implb
+                         (Lit.interp
+                            (interp_state_var interp_atom interp_bvatom
+                               t_form)) a =
+                       C.interp
+                         (interp_state_var interp_atom interp_bvatom t_form)
+                         (to_list (Cnf.or_of_imp a))
+Cnf.afold_left_or : forall (t_form : array form) (interp_atom : int -> bool)
+                      (interp_bvatom : int ->
+                                       forall s : N,
+                                       BVList.BITVECTOR_LIST.bitvector s)
+                      (a : array int),
+                    Misc.afold_left bool int false orb
+                      (Lit.interp
+                         (interp_state_var interp_atom interp_bvatom t_form))
+                      a =
+                    C.interp
+                      (interp_state_var interp_atom interp_bvatom t_form)
+                      (to_list a)
+Bva_checker.afold_left_or : forall (t_atom : array atom)
+                              (t_form : array form) 
+                              (t_i : array typ_compdec)
+                              (t_func : array (tval t_i)) 
+                              (a : array int),
+                            Misc.afold_left bool int false orb
+                              (Lit.interp
+                                 (interp_state_var
+                                    (interp_form_hatom t_i t_func t_atom)
+                                    (interp_form_hatom_bv t_i t_func t_atom)
+                                    t_form)) a =
+                            C.interp
+                              (interp_state_var
+                                 (interp_form_hatom t_i t_func t_atom)
+                                 (interp_form_hatom_bv t_i t_func t_atom)
+                                 t_form) (to_list a)
+Array_checker.afold_left_or : forall (t_form : array form)
+                                (t_atom : array atom)
+                                (t_i : array typ_compdec)
+                                (t_func : array (tval t_i)) 
+                                (a : array int),
+                              Misc.afold_left bool int false orb
+                                (Lit.interp
+                                   (interp_state_var
+                                      (interp_form_hatom t_i t_func t_atom)
+                                      (interp_form_hatom_bv t_i t_func t_atom)
+                                      t_form)) a =
+                              C.interp
+                                (interp_state_var
+                                   (interp_form_hatom t_i t_func t_atom)
+                                   (interp_form_hatom_bv t_i t_func t_atom)
+                                   t_form) (to_list a)
+Cnf.afold_left_and : forall (t_form : array form) 
+                       (interp_atom : int -> bool)
+                       (interp_bvatom : int ->
+                                        forall s : N,
+                                        BVList.BITVECTOR_LIST.bitvector s)
+                       (a : array int),
+                     Misc.afold_left bool int true andb
+                       (Lit.interp
+                          (interp_state_var interp_atom interp_bvatom t_form))
+                       a =
+                     forallb
+                       (Lit.interp
+                          (interp_state_var interp_atom interp_bvatom t_form))
+                       (to_list a)
+Bva_checker.afold_left_and : forall (t_atom : array atom)
+                               (t_form : array form)
+                               (t_i : array typ_compdec)
+                               (t_func : array (tval t_i)) 
+                               (a : array int),
+                             Misc.afold_left bool int true andb
+                               (Lit.interp
+                                  (interp_state_var
+                                     (interp_form_hatom t_i t_func t_atom)
+                                     (interp_form_hatom_bv t_i t_func t_atom)
+                                     t_form)) a =
+                             forallb
+                               (Lit.interp
+                                  (interp_state_var
+                                     (interp_form_hatom t_i t_func t_atom)
+                                     (interp_form_hatom_bv t_i t_func t_atom)
+                                     t_form)) (to_list a)
+add_spec : forall x y : int, [|x + y|]%int = ([|x|]%int + [|y|]%int) mod wB
+Z_land_bounded : forall i x y : Z,
+                 0 <= x < 2 ^ i -> 0 <= y < 2 ^ i -> 0 <= Z.land x y < 2 ^ i
+Cnf.Cinterp_neg : forall (t_form : array form) (interp_atom : int -> bool)
+                    (interp_bvatom : int ->
+                                     forall s : N,
+                                     BVList.BITVECTOR_LIST.bitvector s)
+                    (cl : list int),
+                  C.interp
+                    (interp_state_var interp_atom interp_bvatom t_form)
+                    (map Lit.neg cl) =
+                  negb
+                    (forallb
+                       (Lit.interp
+                          (interp_state_var interp_atom interp_bvatom t_form))
+                       cl)
+*)

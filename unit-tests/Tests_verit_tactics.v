@@ -10,10 +10,8 @@
 (**************************************************************************)
 
 
-Add Rec LoadPath "../src" as SMTCoq.
-
-Require Import SMTCoq.
-Require Import Bool PArray Int63 List ZArith.
+Require Import SMTCoq.SMTCoq.
+Require Import Bool SMTCoq.versions.standard.Array.PArray Int63 List ZArith.
 
 Local Open Scope int63_scope.
 Open Scope Z_scope.
@@ -994,3 +992,212 @@ Proof using.
   intros.
   verit.
 Qed.
+
+Definition all := (apply_lemma,apply_lemma_multiple,check_univ,cinq_m_0,comp,const_fun_is_eq_val_0,coqhammer_example,even_odd,f_1,find_inst,fun_const2,fun_const_Z,h_1_0,implicit_transform,in_app1,in_app2,in_app3,in_cons1,in_cons2,in_cons3,in_cons4,in_cons5,irrelf_ltb,lcongr1,lcongr2,lcongr3,lid,llia1,llia2,llia3,llia6,lpartial_id,mult3_4_12,sat6,simplification_left,simplification_right,taut1,taut2,taut3,taut4,taut5,test20,test21,test_eq_sym,unique_identity,un_menteur).
+Print Assumptions all.
+(*
+Structures.trace_fold_ind : forall (state step : Type)
+                              (P : state -> Prop)
+                              (transition : state -> step -> state)
+                              (t : Structures.trace step),
+                            (forall (s0 : state) (i : Int63Native.int),
+                             (i < Structures.trace_length t)%int63 = true ->
+                             P s0 ->
+                             P (transition s0 (Structures.trace_get t i))) ->
+                            forall s0 : state,
+                            P s0 -> P (Structures.trace_fold transition s0 t)
+Int63Axioms.sub_spec : forall x y : Int63Native.int,
+                       [|x - y|] = ([|x|] - [|y|]) mod Int63Axioms.wB
+BVList.proof_irrelevance : forall (P : Prop) (p1 p2 : P), p1 = p2
+Int63Properties.of_Z_spec : forall z : Z,
+                            [|Int63Op.of_Z z|] = z mod Int63Axioms.wB
+Int63Axioms.lxor_spec : forall x y i : Int63Native.int,
+                        Int63Op.bit (x lxor y) i =
+                        xorb (Int63Op.bit x i) (Int63Op.bit y i)
+ltb_length : forall (A : Type) (t : array A),
+             (PArray.length t <= max_array_length)%int63 = true
+Int63Axioms.lor_spec : forall x y i : Int63Native.int,
+                       Int63Op.bit (x lor y) i =
+                       Int63Op.bit x i || Int63Op.bit y i
+length_set : forall (A : Type) (t : array A) (i : Int63Native.int) (a : A),
+             PArray.length (t .[ i <- a])%array = PArray.length t
+length_make : forall (A : Type) (size : Int63Native.int) (a : A),
+              PArray.length (make size a) =
+              (if (size <= max_array_length)%int63
+               then size
+               else max_array_length)
+get_set_same : forall (A : Type) (t : array A) (i : Int63Native.int) (a : A),
+               (i < PArray.length t)%int63 = true ->
+               ((t .[ i <- a]) .[ i])%array = a
+get_set_other : forall (A : Type) (t : array A) (i j : Int63Native.int)
+                  (a : A),
+                i <> j -> ((t .[ i <- a]) .[ j])%array = (t .[ j])%array
+get_outofbound : forall (A : Type) (t : array A) (i : Int63Native.int),
+                 (i < PArray.length t)%int63 = false ->
+                 (t .[ i])%array = default t
+get_make : forall (A : Type) (a : A) (size i : Int63Native.int),
+           (make size a .[ i])%array = a
+foldi_down_cont_lt : forall (A B : Type)
+                       (f : Int63Native.int -> (A -> B) -> A -> B)
+                       (from downto : Int63Native.int)
+                       (cont : A -> B),
+                     (from < downto)%int63 = true ->
+                     foldi_down_cont f from downto cont = cont
+foldi_down_cont_gt : forall (A B : Type)
+                       (f : Int63Native.int -> (A -> B) -> A -> B)
+                       (from downto : Int63Native.int)
+                       (cont : A -> B),
+                     (downto < from)%int63 = true ->
+                     foldi_down_cont f from downto cont =
+                     f from
+                       (fun a' : A =>
+                        foldi_down_cont f (from - 1) downto cont a')
+foldi_down_cont_eq : forall (A B : Type)
+                       (f : Int63Native.int -> (A -> B) -> A -> B)
+                       (from downto : Int63Native.int)
+                       (cont : A -> B),
+                     from = downto ->
+                     foldi_down_cont f from downto cont = f from cont
+foldi_cont_lt : forall (A B : Type)
+                  (f : Int63Native.int -> (A -> B) -> A -> B)
+                  (from to : Int63Native.int) (cont : A -> B),
+                (from < to)%int63 = true ->
+                foldi_cont f from to cont =
+                f from (fun a' : A => foldi_cont f (from + 1) to cont a')
+foldi_cont_gt : forall (A B : Type)
+                  (f : Int63Native.int -> (A -> B) -> A -> B)
+                  (from to : Int63Native.int) (cont : A -> B),
+                (to < from)%int63 = true -> foldi_cont f from to cont = cont
+foldi_cont_eq : forall (A B : Type)
+                  (f : Int63Native.int -> (A -> B) -> A -> B)
+                  (from to : Int63Native.int) (cont : A -> B),
+                from = to -> foldi_cont f from to cont = f from cont
+default_set : forall (A : Type) (t : array A) (i : Int63Native.int) (a : A),
+              default (t .[ i <- a])%array = default t
+default_make : forall (A : Type) (a : A) (size : Int63Native.int),
+               default (make size a) = a
+ClassicalEpsilon.constructive_indefinite_description :
+forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+Int63Axioms.compare_def_spec : forall x y : Int63Native.int,
+                               (x ?= y)%int63 = Int63Op.compare_def x y
+Classical_Prop.classic : forall P : Prop, P \/ ~ P
+Int63Properties.cast_refl : forall i : Int63Native.int,
+                            Int63Op.cast i i =
+                            Some
+                              (fun (P : Int63Native.int -> Type) (H : P i) =>
+                               H)
+Int63Properties.cast_diff : forall i j : Int63Native.int,
+                            (i == j) = false -> Int63Op.cast i j = None
+bit_testbit : forall x i : Int63Native.int,
+              Int63Op.bit x i = Z.testbit [|x|] [|i|]
+bit_eq : forall i1 i2 : Int63Native.int,
+         i1 = i2 <->
+         (forall i : Int63Native.int, Int63Op.bit i1 i = Int63Op.bit i2 i)
+Cnf.afold_right_impb : forall (t_form : array form)
+                         (interp_atom : Int63Native.int -> bool)
+                         (interp_bvatom : Int63Native.int ->
+                                          forall s : N,
+                                          BVList.BITVECTOR_LIST.bitvector s)
+                         (a : array Int63Native.int),
+                       Misc.afold_right bool Int63Native.int true implb
+                         (Lit.interp
+                            (interp_state_var interp_atom interp_bvatom
+                               t_form)) a =
+                       C.interp
+                         (interp_state_var interp_atom interp_bvatom t_form)
+                         (to_list (Cnf.or_of_imp a))
+Cnf.afold_left_or : forall (t_form : array form)
+                      (interp_atom : Int63Native.int -> bool)
+                      (interp_bvatom : Int63Native.int ->
+                                       forall s : N,
+                                       BVList.BITVECTOR_LIST.bitvector s)
+                      (a : array Int63Native.int),
+                    Misc.afold_left bool Int63Native.int false orb
+                      (Lit.interp
+                         (interp_state_var interp_atom interp_bvatom t_form))
+                      a =
+                    C.interp
+                      (interp_state_var interp_atom interp_bvatom t_form)
+                      (to_list a)
+Bva_checker.afold_left_or : forall (t_atom : array atom)
+                              (t_form : array form)
+                              (t_i : array typ_compdec)
+                              (t_func : array (tval t_i))
+                              (a : array Int63Native.int),
+                            Misc.afold_left bool Int63Native.int false orb
+                              (Lit.interp
+                                 (interp_state_var
+                                    (interp_form_hatom t_i t_func t_atom)
+                                    (interp_form_hatom_bv t_i t_func t_atom)
+                                    t_form)) a =
+                            C.interp
+                              (interp_state_var
+                                 (interp_form_hatom t_i t_func t_atom)
+                                 (interp_form_hatom_bv t_i t_func t_atom)
+                                 t_form) (to_list a)
+Array_checker.afold_left_or : forall (t_form : array form)
+                                (t_atom : array atom)
+                                (t_i : array typ_compdec)
+                                (t_func : array (tval t_i))
+                                (a : array Int63Native.int),
+                              Misc.afold_left bool Int63Native.int false orb
+                                (Lit.interp
+                                   (interp_state_var
+                                      (interp_form_hatom t_i t_func t_atom)
+                                      (interp_form_hatom_bv t_i t_func t_atom)
+                                      t_form)) a =
+                              C.interp
+                                (interp_state_var
+                                   (interp_form_hatom t_i t_func t_atom)
+                                   (interp_form_hatom_bv t_i t_func t_atom)
+                                   t_form) (to_list a)
+Cnf.afold_left_and : forall (t_form : array form)
+                       (interp_atom : Int63Native.int -> bool)
+                       (interp_bvatom : Int63Native.int ->
+                                        forall s : N,
+                                        BVList.BITVECTOR_LIST.bitvector s)
+                       (a : array Int63Native.int),
+                     Misc.afold_left bool Int63Native.int true andb
+                       (Lit.interp
+                          (interp_state_var interp_atom interp_bvatom t_form))
+                       a =
+                     forallb
+                       (Lit.interp
+                          (interp_state_var interp_atom interp_bvatom t_form))
+                       (to_list a)
+Bva_checker.afold_left_and : forall (t_atom : array atom)
+                               (t_form : array form)
+                               (t_i : array typ_compdec)
+                               (t_func : array (tval t_i))
+                               (a : array Int63Native.int),
+                             Misc.afold_left bool Int63Native.int true andb
+                               (Lit.interp
+                                  (interp_state_var
+                                     (interp_form_hatom t_i t_func t_atom)
+                                     (interp_form_hatom_bv t_i t_func t_atom)
+                                     t_form)) a =
+                             forallb
+                               (Lit.interp
+                                  (interp_state_var
+                                     (interp_form_hatom t_i t_func t_atom)
+                                     (interp_form_hatom_bv t_i t_func t_atom)
+                                     t_form)) (to_list a)
+Int63Axioms.add_spec : forall x y : Int63Native.int,
+                       [|x + y|] = ([|x|] + [|y|]) mod Int63Axioms.wB
+Z_land_bounded : forall i x y : Z,
+                 0 <= x < 2 ^ i -> 0 <= y < 2 ^ i -> 0 <= Z.land x y < 2 ^ i
+Cnf.Cinterp_neg : forall (t_form : array form)
+                    (interp_atom : Int63Native.int -> bool)
+                    (interp_bvatom : Int63Native.int ->
+                                     forall s : N,
+                                     BVList.BITVECTOR_LIST.bitvector s)
+                    (cl : list Int63Native.int),
+                  C.interp
+                    (interp_state_var interp_atom interp_bvatom t_form)
+                    (map Lit.neg cl) =
+                  negb
+                    (forallb
+                       (Lit.interp
+                          (interp_state_var interp_atom interp_bvatom t_form))
+                       cl)
+*)
